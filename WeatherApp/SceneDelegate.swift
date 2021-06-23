@@ -15,9 +15,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if let windowScene = scene as? UIWindowScene {
             let window = UIWindow(windowScene: windowScene)
-            let locationManager = LocationManager()
-            window.backgroundColor = .white
-            window.rootViewController = MainViewController(with: locationManager)
+            let navigationController = UINavigationController()
+            let mainCoordinator = MainCoordinator(navigationController: navigationController)
+            mainCoordinator.start()
+            window.rootViewController = navigationController
             self.window = window
             window.makeKeyAndVisible()
         }

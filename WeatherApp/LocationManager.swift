@@ -10,7 +10,7 @@ import CoreLocation
 
 class LocationManager: NSObject, CLLocationManagerDelegate {
     
-    static let shared = LocationManager()
+    static var shared = LocationManager()
     private let manager = CLLocationManager()
     private var completion: ((CLLocation)->Void)?
     

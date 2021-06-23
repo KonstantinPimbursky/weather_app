@@ -11,8 +11,6 @@ import SnapKit
 class OnboardingViewController: UIViewController {
     
     // MARK: - PROPERTIES
-    private let locationManager: LocationManager
-    
     private let onboardingImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "umbrella")
@@ -23,7 +21,7 @@ class OnboardingViewController: UIViewController {
         let label = UILabel()
         label.text = "Разрешить приложению Weather использовать данные о местоположении вашего устройства"
         label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 16)
+        label.font = UIFont(name: "Rubik-Regular", size: 16)
         label.textColor = UIColor(red: 248/255,
                                   green: 245/255,
                                   blue: 245/255,
@@ -35,7 +33,7 @@ class OnboardingViewController: UIViewController {
         let label = UILabel()
         label.text = "Чтобы получить более точные прогнозы погоды во время движения или путешествия"
         label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 14)
+        label.font = UIFont(name: "Rubik-Regular", size: 14)
         label.textColor = .white
         return label
     }()
@@ -44,7 +42,7 @@ class OnboardingViewController: UIViewController {
         let label = UILabel()
         label.text = "Вы можете изменить свой выбор в любое время из меню приложения"
         label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 14)
+        label.font = UIFont(name: "Rubik-Regular", size: 14)
         label.textColor = .white
         return label
     }()
@@ -52,11 +50,8 @@ class OnboardingViewController: UIViewController {
     private let acceptButton: UIButton = {
         let button = UIButton()
         button.setTitle("ИСПОЛЬЗОВАТЬ МЕСТОПОЛОЖЕНИЕ УСТРОЙСТВА", for: .normal)
-        button.backgroundColor = UIColor(red: 242/255,
-                                         green: 110/255,
-                                         blue: 17/255,
-                                         alpha: 1.0)
-        button.titleLabel?.font = .systemFont(ofSize: 12)
+        button.backgroundColor = UIColor(named: "myOrange")
+        button.titleLabel?.font = UIFont(name: "Rubik-Regular", size: 12)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 10
         button.addTarget(self, action: #selector(acceptButtonTapped), for: .touchUpInside)
@@ -67,21 +62,11 @@ class OnboardingViewController: UIViewController {
         let button = UIButton()
         button.setTitle("НЕТ, Я БУДУ ДОБАВЛЯТЬ ЛОКАЦИИ", for: .normal)
         button.contentHorizontalAlignment = .right
-        button.titleLabel?.font =  .systemFont(ofSize: 16)
+        button.titleLabel?.font =  UIFont(name: "Rubik-Regular", size: 16)
         button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
         return button
     }()
-    
-    // MARK: - INIT
-    init(locationManager: LocationManager) {
-        self.locationManager = locationManager
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
     
     // MARK: - FUNCTIONS
     override func viewDidLoad() {
@@ -90,7 +75,7 @@ class OnboardingViewController: UIViewController {
     }
     
     @objc private func acceptButtonTapped() {
-        locationManager.startGetLocation()
+        LocationManager.shared.startGetLocation()
         FirstStartIndicator.shared.setNotFirstStart()
         dismiss(animated: true, completion: nil)
     }
