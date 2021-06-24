@@ -147,6 +147,26 @@ class SettingsViewController: UIViewController {
     }
     
     @objc private func setPreferencesButtonTapped() {
+        if temperatureSegmentedControl.selectedSegmentIndex == 0 {
+            UserDefaults.standard.setValue("C", forKey: "temperature")
+        } else {
+            UserDefaults.standard.setValue("F", forKey: "temperature")
+        }
+        if windSpeedSegmentedControl.selectedSegmentIndex == 0 {
+            UserDefaults.standard.setValue("Mi", forKey: "windSpeed")
+        } else {
+            UserDefaults.standard.setValue("Km", forKey: "windSpeed")
+        }
+        if dateFormatSegmentedControl.selectedSegmentIndex == 0 {
+            UserDefaults.standard.setValue("12", forKey: "dateFormat")
+        } else {
+            UserDefaults.standard.setValue("24", forKey: "dateFormat")
+        }
+        if notificationsSegmentedControl.selectedSegmentIndex == 0 {
+            UserDefaults.standard.setValue(true, forKey: "notifications")
+        } else {
+            UserDefaults.standard.setValue(false, forKey: "notifications")
+        }
         dismiss(animated: true, completion: nil)
     }
     
