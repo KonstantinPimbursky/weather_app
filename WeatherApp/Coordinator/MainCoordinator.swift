@@ -11,13 +11,17 @@ import UIKit
 class MainCoordinator: Coordinator {
     
     var navigationController: UINavigationController
+    var mainViewModel: MainViewModel
     
-    init(navigationController: UINavigationController) {
+    init(navigationController: UINavigationController,
+         mainViewModel: MainViewModel) {
         self.navigationController = navigationController
+        self.mainViewModel = mainViewModel
     }
     
     func start() {
-        let mainViewController = MainViewController(coordinator: self)
+        let mainViewController = MainViewController(coordinator: self,
+                                                    viewModel: mainViewModel)
         navigationController.pushViewController(mainViewController, animated: false)
     }
     

@@ -14,17 +14,21 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var completion: ((CLLocation)->Void)?
     
+    private override init() {
+        
+    }
+    
     public func startGetLocation() {
         manager.requestWhenInUseAuthorization()
     }
     
-    public func getLocation(completion: @escaping ((CLLocation)->Void)) {
+    public func getLocation() -> CLLocation? {
         if CLLocationManager.locationServicesEnabled() {
-            self.completion = completion
             manager.delegate = self
-            manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+            manager.desiredAccuracy = kCLLocationAccuracyBest
             manager.startUpdatingLocation()
         }
+        return manager.location
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

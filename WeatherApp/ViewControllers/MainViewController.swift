@@ -12,6 +12,12 @@ class MainViewController: UIViewController {
     
     // MARK: - PROPERTIES
     private let coordinator: Coordinator
+    private var viewModel: MainOutput
+    private var city: String? {
+        didSet {
+            self.locationLabel.text = city
+        }
+    }
     
     private let settingsButton: UIButton = {
         let button = UIButton()
@@ -23,7 +29,7 @@ class MainViewController: UIViewController {
     
     private let locationLabel: UILabel = {
         let label = UILabel()
-        label.text = "Location"
+        label.text = "Location..."
         label.font = UIFont(name: "Rubik-Medium", size: 18)
         label.textColor = UIColor(named: "myBlack")
         return label
@@ -38,8 +44,10 @@ class MainViewController: UIViewController {
     }()
     
     // MARK: - INIT
-    init(coordinator: Coordinator) {
+    init(coordinator: Coordinator,
+         viewModel: MainOutput) {
         self.coordinator = coordinator
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -52,6 +60,10 @@ class MainViewController: UIViewController {
         super.viewDidLoad()
         navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .white
+        viewModel.getCityFromCoordinates(completion: { [weak self] city in
+                self?.city = city
+                print(city)
+        })
         setupViews()
     }
     

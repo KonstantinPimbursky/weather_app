@@ -58,6 +58,11 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Please allow location access to use our app!</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
