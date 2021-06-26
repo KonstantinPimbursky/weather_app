@@ -10,14 +10,12 @@ import Foundation
 struct GeocodingModel: Codable {
     
     let name: String
-//    let localNames: [String : String]
     let lat: Double
     let lon: Double
     let country: String
 
     enum CodingKeys: String, CodingKey {
         case name
-//        case localNames
         case lat
         case lon
         case country

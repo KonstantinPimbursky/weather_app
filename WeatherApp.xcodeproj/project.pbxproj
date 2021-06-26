@@ -10,6 +10,7 @@
 		B516F7832684EFBB0007882E /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B516F7822684EFBB0007882E /* NetworkService.swift */; };
 		B516F785268500CB0007882E /* GeocodingModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B516F784268500CB0007882E /* GeocodingModel.swift */; };
 		B516F78826863F5D0007882E /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B516F78726863F5D0007882E /* MainViewModel.swift */; };
+		B516F78C26871B840007882E /* ForcastModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B516F78B26871B840007882E /* ForcastModel.swift */; };
 		B56248F5267D215900EBA960 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56248F4267D215900EBA960 /* AppDelegate.swift */; };
 		B56248F7267D215900EBA960 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56248F6267D215900EBA960 /* SceneDelegate.swift */; };
 		B56248FF267D215900EBA960 /* WeatherApp.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B56248FD267D215900EBA960 /* WeatherApp.xcdatamodeld */; };
@@ -34,6 +35,7 @@
 		B516F7822684EFBB0007882E /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		B516F784268500CB0007882E /* GeocodingModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeocodingModel.swift; sourceTree = "<group>"; };
 		B516F78726863F5D0007882E /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
+		B516F78B26871B840007882E /* ForcastModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForcastModel.swift; sourceTree = "<group>"; };
 		B56248F1267D215900EBA960 /* WeatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B56248F4267D215900EBA960 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B56248F6267D215900EBA960 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -76,8 +78,9 @@
 			isa = PBXGroup;
 			children = (
 				B516F7822684EFBB0007882E /* NetworkService.swift */,
-				B516F784268500CB0007882E /* GeocodingModel.swift */,
 				B5624912267FAF4B00EBA960 /* LocationManager.swift */,
+				B516F784268500CB0007882E /* GeocodingModel.swift */,
+				B516F78B26871B840007882E /* ForcastModel.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -299,6 +302,7 @@
 				B56248F7267D215900EBA960 /* SceneDelegate.swift in Sources */,
 				B562490F267F128700EBA960 /* FirstStartIndicator.swift in Sources */,
 				B56249182680FF3600EBA960 /* Coordinator.swift in Sources */,
+				B516F78C26871B840007882E /* ForcastModel.swift in Sources */,
 				B516F785268500CB0007882E /* GeocodingModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
