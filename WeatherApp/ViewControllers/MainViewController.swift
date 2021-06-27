@@ -13,6 +13,7 @@ class MainViewController: UIViewController {
     // MARK: - PROPERTIES
     private let coordinator: Coordinator
     private var viewModel: MainOutput
+    
     private var city: String? {
         didSet {
             self.locationLabel.text = city
@@ -64,6 +65,7 @@ class MainViewController: UIViewController {
                 self?.city = city
                 print(city)
         })
+        viewModel.getForecast()
         setupViews()
     }
     
