@@ -10,86 +10,138 @@ import CoreData
 
 class CoreDataStack {
     private(set) lazy var persistentContainer: NSPersistentContainer = {
-        /*
-         The persistent container for the application. This implementation
-         creates and returns a container, having loaded the store for the
-         application to it. This property is optional since there are legitimate
-         error conditions that could cause the creation of the store to fail.
-        */
-        let container = NSPersistentContainer(name: "LikedPostModel")
+       
+        let container = NSPersistentContainer(name: "WeatherApp")
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                 
-                /*
-                 Typical reasons for an error here include:
-                 * The parent directory does not exist, cannot be created, or disallows writing.
-                 * The persistent store is not accessible, due to permissions or data protection when the device is locked.
-                 * The device is out of space.
-                 * The store could not be migrated to the current model version.
-                 Check the error message to determine what the actual problem was.
-                 */
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
         return container
     }()
     
-//    var viewContext: NSManagedObjectContext {
-//        return persistentContainer.viewContext
-//    }
-//
-//    func newBackgroundContext() -> NSManagedObjectContext {
-//        return persistentContainer.newBackgroundContext()
-//    }
-//
-//    func fetchLikedPosts(filteredBy author: String?) -> [LikedPost] {
-//        let request: NSFetchRequest<LikedPost> = LikedPost.fetchRequest()
-//        request.fetchBatchSize = 20
-//        if let text = author {
-//            let predicate = NSPredicate(format: "%K LIKE %@", #keyPath(LikedPost.postAuthor), text)
-//            request.predicate = predicate
-//        }
-//
-//        do {
-//            return try viewContext.fetch(request)
-//        } catch {
-//            fatalError("🤷‍♂️ Что-то пошло не так..")
-//        }
-//    }
-//
-//    func remove(likedPost: LikedPost) {
-//        viewContext.delete(likedPost)
-//
-//        save(context: viewContext)
-//    }
-//
-//    func createNewLikedPost(post: PostModel) {
-//        let backgroundContext = newBackgroundContext()
-//        let newLikedPost = LikedPost(context: backgroundContext)
-//        newLikedPost.id = UUID()
-//        newLikedPost.postAuthor = post.author
-//        newLikedPost.postDescription = post.description
-//        newLikedPost.postImage = post.image
-//        newLikedPost.postLikes = Int16(post.likes)
-//        newLikedPost.postViews = Int16(post.views)
-//        backgroundContext.perform {
-//            do {
-//                try backgroundContext.save()
-//            } catch let error {
-//                print(error)
-//            }
-//        }
-//    }
-//
-//    private func save(context: NSManagedObjectContext) {
-//        guard context.hasChanges else { return }
-//
-//        do {
-//            try context.save()
-//        } catch {
-//            print(error)
-//        }
-//    }
+    var viewContext: NSManagedObjectContext {
+        return persistentContainer.viewContext
+    }
+
+    func newBackgroundContext() -> NSManagedObjectContext {
+        return persistentContainer.newBackgroundContext()
+    }
+
+    func fetchForecastData() -> [ForecastData] {
+        let request: NSFetchRequest<ForecastData> = ForecastData.fetchRequest()
+        request.fetchBatchSize = 20
+        do {
+            return try viewContext.fetch(request)
+        } catch {
+            fatalError("🤷‍♂️ Что-то пошло не так..")
+        }
+    }
+
+    func remove(forecastData: ForecastData) {
+        viewContext.delete(forecastData)
+
+        save(context: viewContext)
+    }
+
+    func createNewForecastData(forecast: ForecastModel) {
+        let backgroundContext = newBackgroundContext()
+
+        let newForecastData = ForecastData(context: backgroundContext)
+        newForecastData.lat = forecast.lat
+        newForecastData.lon = forecast.lon
+
+        let newCurrentData = CurrentData(context: backgroundContext)
+        newCurrentData.dt = forecast.current.dt
+        newCurrentData.sunrise = forecast.current.sunrise
+        newCurrentData.sunset = forecast.current.sunset
+        newCurrentData.temp = forecast.current.temp
+        newCurrentData.windSpeed = Int16(forecast.current.windSpeed)
+
+        for weather in forecast.current.weather {
+            let newCurrentWeather = WeatherData(context: backgroundContext)
+            newCurrentWeather.weatherDescription = weather.weatherDescription
+            newCurrentWeather.icon = weather.icon
+            newCurrentData.addToWeather(newCurrentWeather)
+        }
+
+        let newCurrentRain = RainData(context: backgroundContext)
+        newCurrentRain.oneHour = forecast.current.rain?.oneHour
+
+        let newCurrentSnow = SnowData(context: backgroundContext)
+        newCurrentSnow.oneHour = forecast.current.snow?.oneHour
+
+        newCurrentData.rain = newCurrentRain
+        newCurrentData.snow = newCurrentSnow
+        newForecastData.current = newCurrentData
+
+        for hourly in forecast.hourly {
+            let newHourlyData = HourlyData(context: backgroundContext)
+            newHourlyData.dt = hourly.dt
+            newHourlyData.temp = hourly.temp
+            newHourlyData.feelsLike = hourly.feelsLike
+            newHourlyData.clouds = Int16(hourly.clouds)
+            newHourlyData.windSpeed = hourly.windSpeed
+            newHourlyData.windDeg = Int16(hourly.windDeg)
+            newHourlyData.pop = Int16(hourly.pop)
+            for weather in hourly.weather {
+                let newCurrentWeather = WeatherData(context: backgroundContext)
+                newCurrentWeather.weatherDescription = weather.weatherDescription
+                newCurrentWeather.icon = weather.icon
+                newHourlyData.addToWeather(newCurrentWeather)
+            }
+            newForecastData.addToHourly(newHourlyData)
+        }
+        
+        for daily in forecast.daily {
+            let newDailyData = DailyData(context: backgroundContext)
+            newDailyData.dt = daily.dt
+            newDailyData.sunrise = daily.sunrise
+            newDailyData.sunset = daily.sunset
+            newDailyData.windSpeed = daily.windSpeed
+            newDailyData.windDeg = Int16(daily.windDeg)
+            newDailyData.clouds = Int16(daily.clouds)
+            newDailyData.pop = daily.pop
+            newDailyData.uvi = daily.uvi
+            
+            let newTempData = TempData(context: backgroundContext)
+            newTempData.day = daily.temp.day
+            newTempData.min = daily.temp.min
+            newTempData.max = daily.temp.max
+            newTempData.night = daily.temp.night
+            newDailyData.temp = newTempData
+            
+            let newFeelsLikeData = FeelsLikeData(context: backgroundContext)
+            newFeelsLikeData.day = daily.feelsLike.day
+            newFeelsLikeData.night = daily.feelsLike.night
+            newDailyData.feelsLike = newFeelsLikeData
+            
+            for weather in daily.weather {
+                let newWeatherData = WeatherData(context: backgroundContext)
+                newWeatherData.weatherDescription = weather.weatherDescription
+                newWeatherData.icon = weather.icon
+                newDailyData.addToWeather(newWeatherData)
+            }
+            
+            newForecastData.addToDaily(newDailyData)
+        }
+
+        backgroundContext.perform {
+            do {
+                try backgroundContext.save()
+            } catch let error {
+                print(error)
+            }
+        }
+    }
+
+    private func save(context: NSManagedObjectContext) {
+        guard context.hasChanges else { return }
+
+        do {
+            try context.save()
+        } catch {
+            print(error)
+        }
+    }
 }

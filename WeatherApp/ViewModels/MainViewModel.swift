@@ -11,7 +11,7 @@ import Alamofire
 // MARK: -
 protocol MainOutput {
     func getCityFromCoordinates(completion: @escaping (_ city: String) -> Void)
-    func getForecast()
+    func getForecast() -> ForecastData
 }
 
 // MARK: -
@@ -20,13 +20,14 @@ class MainViewModel: MainOutput {
     private let apiKey = "107e2da708b5767f8a8c4c925485a06c"
     private var latitude: Double = 0
     private var longitude: Double = 0
+    private let coreDataStack: CoreDataStack
     
-    init() {
+    init(coreDataStack: CoreDataStack) {
         if let location = LocationManager.shared.getLocation() {
             self.latitude = location.coordinate.latitude
             self.longitude = location.coordinate.longitude
         }
-        
+        self.coreDataStack = coreDataStack
     }
     
     func getCityFromCoordinates(completion: @escaping (_ city: String) -> Void) {
@@ -58,7 +59,21 @@ class MainViewModel: MainOutput {
         }
     }
     
-    func getForecast() {
+    func getForecast() -> ForecastData {
+        var forecastData = coreDataStack.fetchForecastData()
+        if forecastData.isEmpty {
+            self.dowloadForecastFromNetwork()
+            forecastData = coreDataStack.fetchForecastData()
+            return forecastData[0]
+        } else {
+            
+        }
+        coreDataStack.remove(forecastData: forecastData[0])
+        self.dowloadForecastFromNetwork()
+        return forecastData[0]
+    }
+    
+    func dowloadForecastFromNetwork() {
         DispatchQueue.global(qos: .background).sync {
             var components = URLComponents()
             components.scheme = "https"
@@ -69,6 +84,7 @@ class MainViewModel: MainOutput {
                 URLQueryItem(name: "lon", value: String(self.longitude)),
                 URLQueryItem(name: "exclude", value: "minutely,alerts"),
                 URLQueryItem(name: "units", value: "metric"),
+                URLQueryItem(name: "lang", value: "ru"),
                 URLQueryItem(name: "appid", value: self.apiKey)
             ]
             AF.request(components).validate().responseJSON { responseJSON in
@@ -78,7 +94,7 @@ class MainViewModel: MainOutput {
                     do {
                         let data = responseJSON.data!
                         let forecast = try JSONDecoder().decode(ForecastModel.self, from: data)
-                        print(forecast)
+                        self.coreDataStack.createNewForecastData(forecast: forecast)
                     } catch let error {
                         print(error)
                     }
