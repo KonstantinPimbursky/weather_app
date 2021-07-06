@@ -68,6 +68,18 @@ class OnboardingViewController: UIViewController {
         return button
     }()
     
+    private let completion: () -> Void
+    
+    // MARK: -INIT
+    init(completion: @escaping () -> Void) {
+        self.completion = completion
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - FUNCTIONS
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,9 +87,11 @@ class OnboardingViewController: UIViewController {
     }
     
     @objc private func acceptButtonTapped() {
-        LocationManager.shared.startGetLocation()
         FirstStartIndicator.shared.setNotFirstStart()
-        dismiss(animated: true, completion: nil)
+        LocationManager.shared.startGetLocation {
+            self.dismiss(animated: true, completion: self.completion)
+        }
+        
     }
     
     @objc private func cancelButtonTapped() {

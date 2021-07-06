@@ -2,7 +2,7 @@
 //  TempData+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Konstantin Pimbursky on 28.06.2021.
+//  Created by Konstantin Pimbursky on 06.07.2021.
 //
 //
 

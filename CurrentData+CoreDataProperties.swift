@@ -2,7 +2,7 @@
 //  CurrentData+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Konstantin Pimbursky on 28.06.2021.
+//  Created by Konstantin Pimbursky on 06.07.2021.
 //
 //
 
@@ -21,7 +21,8 @@ extension CurrentData {
     @NSManaged public var sunset: Double
     @NSManaged public var temp: Double
     @NSManaged public var windSpeed: Int16
-    @NSManaged public var forcast: ForecastData
+    @NSManaged public var humidity: Int16
+    @NSManaged public var forecast: ForecastData
     @NSManaged public var rain: RainData?
     @NSManaged public var snow: SnowData?
     @NSManaged public var weather: NSSet

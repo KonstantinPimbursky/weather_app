@@ -2,7 +2,7 @@
 //  ForecastData+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Konstantin Pimbursky on 28.06.2021.
+//  Created by Konstantin Pimbursky on 06.07.2021.
 //
 //
 
@@ -19,8 +19,8 @@ extension ForecastData {
     @NSManaged public var lat: Double
     @NSManaged public var lon: Double
     @NSManaged public var current: CurrentData
-    @NSManaged public var hourly: NSSet?
-    @NSManaged public var daily: NSSet?
+    @NSManaged public var hourly: NSSet
+    @NSManaged public var daily: NSSet
 
 }
 

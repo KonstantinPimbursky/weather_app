@@ -2,7 +2,7 @@
 //  RainData+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Konstantin Pimbursky on 28.06.2021.
+//  Created by Konstantin Pimbursky on 06.07.2021.
 //
 //
 
@@ -16,7 +16,7 @@ extension RainData {
         return NSFetchRequest<RainData>(entityName: "RainData")
     }
 
-    @NSManaged public var oneHour: String?
+    @NSManaged public var oneHour: String
     @NSManaged public var curent: CurrentData
 
 }

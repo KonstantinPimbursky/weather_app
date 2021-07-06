@@ -30,7 +30,6 @@ class CoreDataStack {
 
     func fetchForecastData() -> [ForecastData] {
         let request: NSFetchRequest<ForecastData> = ForecastData.fetchRequest()
-        request.fetchBatchSize = 20
         do {
             return try viewContext.fetch(request)
         } catch {
@@ -44,7 +43,7 @@ class CoreDataStack {
         save(context: viewContext)
     }
 
-    func createNewForecastData(forecast: ForecastModel) {
+    func createNewForecastData(forecast: ForecastModel, completion: @escaping () -> Void) {
         let backgroundContext = newBackgroundContext()
 
         let newForecastData = ForecastData(context: backgroundContext)
@@ -56,6 +55,7 @@ class CoreDataStack {
         newCurrentData.sunrise = forecast.current.sunrise
         newCurrentData.sunset = forecast.current.sunset
         newCurrentData.temp = forecast.current.temp
+        newCurrentData.humidity = Int16(forecast.current.humidity)
         newCurrentData.windSpeed = Int16(forecast.current.windSpeed)
 
         for weather in forecast.current.weather {
@@ -66,10 +66,13 @@ class CoreDataStack {
         }
 
         let newCurrentRain = RainData(context: backgroundContext)
-        newCurrentRain.oneHour = forecast.current.rain?.oneHour
-
+        if let oneHourRain = forecast.current.rain {
+            newCurrentRain.oneHour = oneHourRain.oneHour
+        }
         let newCurrentSnow = SnowData(context: backgroundContext)
-        newCurrentSnow.oneHour = forecast.current.snow?.oneHour
+        if let oneHourSnow = forecast.current.snow {
+            newCurrentSnow.oneHour = oneHourSnow.oneHour
+        }
 
         newCurrentData.rain = newCurrentRain
         newCurrentData.snow = newCurrentSnow
@@ -83,7 +86,7 @@ class CoreDataStack {
             newHourlyData.clouds = Int16(hourly.clouds)
             newHourlyData.windSpeed = hourly.windSpeed
             newHourlyData.windDeg = Int16(hourly.windDeg)
-            newHourlyData.pop = Int16(hourly.pop)
+            newHourlyData.pop = hourly.pop
             for weather in hourly.weather {
                 let newCurrentWeather = WeatherData(context: backgroundContext)
                 newCurrentWeather.weatherDescription = weather.weatherDescription
@@ -125,14 +128,16 @@ class CoreDataStack {
             
             newForecastData.addToDaily(newDailyData)
         }
-
+        print("Пытаемся сохранить\n\(newForecastData)")
         backgroundContext.perform {
             do {
                 try backgroundContext.save()
+                completion()
             } catch let error {
                 print(error)
             }
         }
+        
     }
 
     private func save(context: NSManagedObjectContext) {

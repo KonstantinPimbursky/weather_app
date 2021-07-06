@@ -2,7 +2,7 @@
 //  HourlyData+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Konstantin Pimbursky on 28.06.2021.
+//  Created by Konstantin Pimbursky on 06.07.2021.
 //
 //
 
@@ -22,7 +22,7 @@ extension HourlyData {
     @NSManaged public var clouds: Int16
     @NSManaged public var windSpeed: Double
     @NSManaged public var windDeg: Int16
-    @NSManaged public var pop: Int16
+    @NSManaged public var pop: Double
     @NSManaged public var forecast: ForecastData
     @NSManaged public var weather: NSSet
 

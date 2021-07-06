@@ -11,13 +11,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     lazy var coreDataStack = CoreDataStack()
+    var networkService = NetworkService()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if let windowScene = scene as? UIWindowScene {
             
             let window = UIWindow(windowScene: windowScene)
             let navigationController = UINavigationController()
-            let mainViewModel = MainViewModel(coreDataStack: coreDataStack)
+            let mainViewModel = MainViewModel(coreDataStack: coreDataStack,
+                                              networkService: networkService)
             let mainCoordinator = MainCoordinator(navigationController: navigationController,
                                                   mainViewModel: mainViewModel)
             mainCoordinator.start()

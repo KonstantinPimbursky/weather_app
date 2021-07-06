@@ -8,6 +8,14 @@
 import Foundation
 import UIKit
 
+protocol Coordinator {
+    var navigationController: UINavigationController { get set }
+    
+    func start() -> Void
+    func showSettingsScreen() -> Void
+    func showLocationChoice() -> Void
+}
+
 class MainCoordinator: Coordinator {
     
     var navigationController: UINavigationController
@@ -20,17 +28,8 @@ class MainCoordinator: Coordinator {
     }
     
     func start() {
-        let mainViewController = MainViewController(coordinator: self,
-                                                    viewModel: mainViewModel)
+        let mainViewController = MainViewController(coordinator: self, viewModel: mainViewModel)
         navigationController.pushViewController(mainViewController, animated: false)
-    }
-    
-    func showOnborading() {
-        if FirstStartIndicator.shared.isFirstStart() {
-            let onboardingViewController = OnboardingViewController()
-            onboardingViewController.modalPresentationStyle = .fullScreen
-            navigationController.present(onboardingViewController, animated: true, completion: nil)
-        }
     }
     
     func showSettingsScreen() {

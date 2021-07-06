@@ -6,102 +6,69 @@
 //
 
 import Foundation
-import Alamofire
 
 // MARK: -
 protocol MainOutput {
-    func getCityFromCoordinates(completion: @escaping (_ city: String) -> Void)
-    func getForecast() -> ForecastData
+    func getForecast(completion: @escaping (ForecastData) -> Void)
+    func getLocation(compeletion: @escaping (_ location: String) -> Void)
 }
 
 // MARK: -
 class MainViewModel: MainOutput {
-    
-    private let apiKey = "107e2da708b5767f8a8c4c925485a06c"
+
     private var latitude: Double = 0
     private var longitude: Double = 0
     private let coreDataStack: CoreDataStack
+    private let networkService: NetworkProtocol
     
-    init(coreDataStack: CoreDataStack) {
-        if let location = LocationManager.shared.getLocation() {
+    init(coreDataStack: CoreDataStack,
+         networkService: NetworkProtocol) {
+        self.coreDataStack = coreDataStack
+        self.networkService = networkService
+    }
+    
+    func getForecast(completion: @escaping (ForecastData) -> Void) {
+        if LocationManager.shared.isEnabled(),
+           let location = LocationManager.shared.getLocation() {
             self.latitude = location.coordinate.latitude
             self.longitude = location.coordinate.longitude
         }
-        self.coreDataStack = coreDataStack
-    }
-    
-    func getCityFromCoordinates(completion: @escaping (_ city: String) -> Void) {
-        DispatchQueue.global(qos: .background).sync {
-            var components = URLComponents()
-            components.scheme = "http"
-            components.host = "api.openweathermap.org"
-            components.path = "/geo/1.0/reverse"
-            components.queryItems = [
-                URLQueryItem(name: "lat", value: String(self.latitude)),
-                URLQueryItem(name: "lon", value: String(self.longitude)),
-                URLQueryItem(name: "appid", value: self.apiKey)
-            ]
-            AF.request(components).validate().responseJSON { responseJSON in
-                switch responseJSON.result {
-                case .success:
-                    do {
-                        let data = responseJSON.data
-                        let locality = try JSONDecoder().decode([GeocodingModel].self, from: data!)
-                        let city = "\(locality[0].name).\(locality[0].country)"
-                        completion(city)
-                    } catch {
-                        print("Не удалось декодировать локацию")
+        var weatherForecast = coreDataStack.fetchForecastData()
+        if weatherForecast.isEmpty {
+            DispatchQueue.global(qos: .background).async {
+                self.networkService.getForecastFromNetwork(latitude: self.latitude, longitude: self.longitude) { forecast in
+                    self.coreDataStack.createNewForecastData(forecast: forecast) {
+                        weatherForecast = self.coreDataStack.fetchForecastData()
+                        DispatchQueue.main.async {
+                            completion(weatherForecast[0])
+                        }
+                        
                     }
-                case .failure(let error):
-                    print(error)
                 }
             }
-        }
-    }
-    
-    func getForecast() -> ForecastData {
-        var forecastData = coreDataStack.fetchForecastData()
-        if forecastData.isEmpty {
-            self.dowloadForecastFromNetwork()
-            forecastData = coreDataStack.fetchForecastData()
-            return forecastData[0]
         } else {
-            
-        }
-        coreDataStack.remove(forecastData: forecastData[0])
-        self.dowloadForecastFromNetwork()
-        return forecastData[0]
-    }
-    
-    func dowloadForecastFromNetwork() {
-        DispatchQueue.global(qos: .background).sync {
-            var components = URLComponents()
-            components.scheme = "https"
-            components.host = "api.openweathermap.org"
-            components.path = "/data/2.5/onecall"
-            components.queryItems = [
-                URLQueryItem(name: "lat", value: String(self.latitude)),
-                URLQueryItem(name: "lon", value: String(self.longitude)),
-                URLQueryItem(name: "exclude", value: "minutely,alerts"),
-                URLQueryItem(name: "units", value: "metric"),
-                URLQueryItem(name: "lang", value: "ru"),
-                URLQueryItem(name: "appid", value: self.apiKey)
-            ]
-            AF.request(components).validate().responseJSON { responseJSON in
-                switch responseJSON.result {
-                case .success:
-                    
-                    do {
-                        let data = responseJSON.data!
-                        let forecast = try JSONDecoder().decode(ForecastModel.self, from: data)
-                        self.coreDataStack.createNewForecastData(forecast: forecast)
-                    } catch let error {
-                        print(error)
+            DispatchQueue.global(qos: .background).async {
+                self.coreDataStack.remove(forecastData: weatherForecast[0])
+                self.networkService.getForecastFromNetwork(latitude: self.latitude, longitude: self.longitude) { forecast in
+                    self.coreDataStack.createNewForecastData(forecast: forecast) {
+                        return
                     }
-                case .failure(let error):
-                    print(error)
+                }
+                DispatchQueue.main.async {
+                    completion(weatherForecast[0])
                 }
             }
+        }
+    }
+    
+    func getLocation(compeletion: @escaping (String) -> Void) {
+        if LocationManager.shared.isEnabled(),
+           let location = LocationManager.shared.getLocation() {
+            self.latitude = location.coordinate.latitude
+            self.longitude = location.coordinate.longitude
+        }
+        networkService.getCityFromCoordinates(latitude: latitude, longitude: longitude) { location in
+            compeletion(location)
         }
     }
 }

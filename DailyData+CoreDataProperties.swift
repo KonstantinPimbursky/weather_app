@@ -2,7 +2,7 @@
 //  DailyData+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Konstantin Pimbursky on 28.06.2021.
+//  Created by Konstantin Pimbursky on 06.07.2021.
 //
 //
 
@@ -27,7 +27,7 @@ extension DailyData {
     @NSManaged public var clouds: Int16
     @NSManaged public var pop: Double
     @NSManaged public var uvi: Double
-    @NSManaged public var forcast: ForecastData
+    @NSManaged public var forecast: ForecastData
     @NSManaged public var temp: TempData
     @NSManaged public var feelsLike: FeelsLikeData
     @NSManaged public var weather: NSSet
