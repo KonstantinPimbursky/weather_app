@@ -63,19 +63,4 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
             return
         }
     }
-    
-//    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-//        switch status {
-//        case .authorizedAlways:
-//            if self.changeAuthorizationCompletion != nil {
-//                self.changeAuthorizationCompletion!()
-//            }
-//        case .authorizedWhenInUse:
-//            if self.changeAuthorizationCompletion != nil {
-//                self.changeAuthorizationCompletion!()
-//            }
-//        default:
-//            return
-//        }
-//    }
 }

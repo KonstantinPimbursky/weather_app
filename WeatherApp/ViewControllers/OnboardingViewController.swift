@@ -11,6 +11,8 @@ import SnapKit
 class OnboardingViewController: UIViewController {
     
     // MARK: - PROPERTIES
+    private let coordinator: Coordinator
+    
     private let onboardingImage: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "umbrella")
@@ -68,11 +70,9 @@ class OnboardingViewController: UIViewController {
         return button
     }()
     
-    private let completion: () -> Void
-    
     // MARK: -INIT
-    init(completion: @escaping () -> Void) {
-        self.completion = completion
+    init(coordinator: Coordinator) {
+        self.coordinator = coordinator
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -83,20 +83,20 @@ class OnboardingViewController: UIViewController {
     // MARK: - FUNCTIONS
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationController?.navigationBar.isHidden = true
         setupViews()
     }
     
     @objc private func acceptButtonTapped() {
         FirstStartIndicator.shared.setNotFirstStart()
-        LocationManager.shared.startGetLocation {
-            self.dismiss(animated: true, completion: self.completion)
+        LocationManager.shared.startGetLocation { [weak self] in
+            self?.coordinator.showMainViewController()
         }
-        
     }
     
     @objc private func cancelButtonTapped() {
         FirstStartIndicator.shared.setNotFirstStart()
-        dismiss(animated: true, completion: nil)
+        coordinator.showMainViewController()
     }
     
     private func setupViews() {

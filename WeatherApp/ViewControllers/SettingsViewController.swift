@@ -90,7 +90,11 @@ class SettingsViewController: UIViewController {
     private let temperatureSegmentedControl: UISegmentedControl = {
         let items = ["C", "F"]
         let control = UISegmentedControl(items: items)
-        control.selectedSegmentIndex = 0
+        if UserDefaults.standard.string(forKey: "temperature") == "C" {
+            control.selectedSegmentIndex = 0
+        } else {
+            control.selectedSegmentIndex = 1
+        }
         control.layer.cornerRadius = 5
         control.layer.borderWidth = 0
         control.layer.masksToBounds = true
@@ -103,7 +107,11 @@ class SettingsViewController: UIViewController {
     private let windSpeedSegmentedControl: UISegmentedControl = {
         let items = ["Mi", "Km"]
         let control = UISegmentedControl(items: items)
-        control.selectedSegmentIndex = 0
+        if UserDefaults.standard.string(forKey: "windSpeed") == "Mi" {
+            control.selectedSegmentIndex = 0
+        } else {
+            control.selectedSegmentIndex = 1
+        }
         control.layer.cornerRadius = 5
         control.layer.borderWidth = 0
         control.layer.masksToBounds = true
@@ -116,7 +124,11 @@ class SettingsViewController: UIViewController {
     private let dateFormatSegmentedControl: UISegmentedControl = {
         let items = ["12", "24"]
         let control = UISegmentedControl(items: items)
-        control.selectedSegmentIndex = 0
+        if UserDefaults.standard.string(forKey: "dateFormat") == "12" {
+            control.selectedSegmentIndex = 0
+        } else {
+            control.selectedSegmentIndex = 1
+        }
         control.layer.cornerRadius = 5
         control.layer.borderWidth = 0
         control.layer.masksToBounds = true
@@ -129,7 +141,11 @@ class SettingsViewController: UIViewController {
     private let notificationsSegmentedControl: UISegmentedControl = {
         let items = ["On", "Off"]
         let control = UISegmentedControl(items: items)
-        control.selectedSegmentIndex = 0
+        if UserDefaults.standard.string(forKey: "notifications") == "On" {
+            control.selectedSegmentIndex = 0
+        } else {
+            control.selectedSegmentIndex = 1
+        }
         control.layer.cornerRadius = 5
         control.layer.borderWidth = 0
         control.layer.masksToBounds = true

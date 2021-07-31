@@ -9,8 +9,10 @@ import Foundation
 
 // MARK: -
 protocol MainOutput {
-    func getForecast(completion: @escaping (ForecastData) -> Void)
-    func getLocation(compeletion: @escaping (_ location: String) -> Void)
+    func downloadForecastFromDataBase(completion: @escaping ([ForecastData]) -> Void)
+    func getForecastForNewLocation(for geocodingModel: GeocodingModel, usingGeolocation: Bool, completion: @escaping () -> Void)
+    func getLocation(compeletion: @escaping (_ location: GeocodingModel) -> Void)
+    func getForecastUsingGeolocation(completion: @escaping () -> Void)
 }
 
 // MARK: -
@@ -27,41 +29,29 @@ class MainViewModel: MainOutput {
         self.networkService = networkService
     }
     
-    func getForecast(completion: @escaping (ForecastData) -> Void) {
-        if LocationManager.shared.isEnabled(),
-           let location = LocationManager.shared.getLocation() {
-            self.latitude = location.coordinate.latitude
-            self.longitude = location.coordinate.longitude
-        }
-        var weatherForecast = coreDataStack.fetchForecastData()
-        if weatherForecast.isEmpty {
-            DispatchQueue.global(qos: .background).async {
-                self.networkService.getForecastFromNetwork(latitude: self.latitude, longitude: self.longitude) { forecast in
-                    self.coreDataStack.createNewForecastData(forecast: forecast) {
-                        weatherForecast = self.coreDataStack.fetchForecastData()
-                        DispatchQueue.main.async {
-                            completion(weatherForecast[0])
-                        }
-                        
-                    }
-                }
-            }
-        } else {
-            DispatchQueue.global(qos: .background).async {
-                self.coreDataStack.remove(forecastData: weatherForecast[0])
-                self.networkService.getForecastFromNetwork(latitude: self.latitude, longitude: self.longitude) { forecast in
-                    self.coreDataStack.createNewForecastData(forecast: forecast) {
-                        return
-                    }
-                }
-                DispatchQueue.main.async {
-                    completion(weatherForecast[0])
-                }
-            }
+    func downloadForecastFromDataBase(completion: @escaping ([ForecastData]) -> Void) {
+        completion(coreDataStack.fetchForecastData())
+    }
+    
+    func getForecastForNewLocation(for geocodingModel: GeocodingModel,
+                                   usingGeolocation: Bool,
+                                   completion: @escaping () -> Void) {
+        networkService.getForecastFromNetwork(latitude: geocodingModel.lat,
+                                              longitude: geocodingModel.lon) { [weak self] forecastModel in
+            self?.coreDataStack.createNewForecastData(forecast: forecastModel,
+                                                      location: geocodingModel.name,
+                                                      usingGeolocation: usingGeolocation,
+                                                      completion: completion)
         }
     }
     
-    func getLocation(compeletion: @escaping (String) -> Void) {
+    func getForecastUsingGeolocation(completion: @escaping () -> Void) {
+        self.getLocation { [weak self] geocodingModel in
+            self?.getForecastForNewLocation(for: geocodingModel, usingGeolocation: true, completion: completion)
+        }
+    }
+    
+    func getLocation(compeletion: @escaping (GeocodingModel) -> Void) {
         if LocationManager.shared.isEnabled(),
            let location = LocationManager.shared.getLocation() {
             self.latitude = location.coordinate.latitude

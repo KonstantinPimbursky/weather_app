@@ -10,14 +10,12 @@ import SnapKit
 
 class MainViewController: UIViewController {
     
-    // MARK: - PROPERTIES
+    // MARK: -PROPERTIES
     private let coordinator: Coordinator
     private var viewModel: MainOutput
-    private var forecast: ForecastData? {
-        didSet {
-            self.fillLabels()
-        }
-    }
+    private var currentIndex: Int?
+    private var pendingIndex: Int?
+    private var savedForcasts: [ForecastData]?
     
     private let settingsButton: UIButton = {
         let button = UIButton()
@@ -25,14 +23,6 @@ class MainViewController: UIViewController {
         button.tintColor = UIColor(named: "myBlack")
         button.addTarget(self, action: #selector(settingButtonTapped), for: .touchUpInside)
         return button
-    }()
-    
-    private let locationLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Location..."
-        label.font = UIFont(name: "Rubik-Medium", size: 18)
-        label.textColor = UIColor(named: "myBlack")
-        return label
     }()
     
     private let locationChoiceButton: UIButton = {
@@ -43,122 +33,19 @@ class MainViewController: UIViewController {
         return button
     }()
     
-    private let currentForecastView: UIView = {
-        let someView = UIView()
-        someView.backgroundColor = UIColor(named: "mainBlue")
-        someView.layer.cornerRadius = 5
-        return someView
-    }()
+    private let pageControl = UIPageControl()
     
-    private let sunEllipseImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "ellipse")
-        return imageView
-    }()
+    private let pageViewController = UIPageViewController(transitionStyle: .scroll,
+                                                          navigationOrientation: .horizontal,
+                                                          options: nil)
     
-    private let sunriseImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "sunrise")
-        return imageView
-    }()
+    private var locationViewControllers: [UIViewController] = []
     
-    private let sunsetImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "sunset")
-        return imageView
-    }()
-    
-    private let minMaxTemperatureLabel: UILabel = {
-        let label = UILabel()
-        // "\u{00B0}" - значок градуса
-        label.text = "--/--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 16)
-        return label
-    }()
-    
-    private let currentTemperatureLabel: UILabel = {
-        let label = UILabel()
-        label.text = "--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 36)
-        return label
-    }()
-    
-    private let currentWeatherDescriptionLabel: UILabel = {
-        let label = UILabel()
-        label.text = "--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 16)
-        return label
-    }()
-    
-    private let sunriseTimeLabel: UILabel = {
-        let label = UILabel()
-        label.text = "--:--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 14)
-        return label
-    }()
-    
-    private let sunsetTimeLabel: UILabel = {
-        let label = UILabel()
-        label.text = "--:--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 14)
-        return label
-    }()
-    
-    private let rainfallImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "02d")
-        return imageView
-    }()
-    
-    private let windImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "wind")
-        return imageView
-    }()
-    
-    private let humidityImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "humidity")
-        return imageView
-    }()
-    
-    private let rainfallLabel: UILabel = {
-        let label = UILabel()
-        label.text = "0"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 14)
-        return label
-    }()
-    
-    private let windSpeedLabel: UILabel = {
-        let label = UILabel()
-        label.text = "--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 14)
-        return label
-    }()
-    
-    private let humidityLabel: UILabel = {
-        let label = UILabel()
-        label.text = "--"
-        label.textColor = UIColor.white
-        label.font = UIFont(name: "Rubik-Regular", size: 14)
-        return label
-    }()
-    
-    private let contentView = UIView()
-    
-    // MARK: - INIT
+    // MARK: -INIT
     init(coordinator: Coordinator,
          viewModel: MainOutput) {
         self.coordinator = coordinator
         self.viewModel = viewModel
-        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -166,169 +53,50 @@ class MainViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - FUNCTIONS
+    // MARK: -FUNCTIONS
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .white
-        setupViews()
+        downloadData()
+        setupScreen()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        if FirstStartIndicator.shared.isFirstStart() {
-            let onboardingViewController = OnboardingViewController {
-                self.viewModel.getLocation { city in
-                    self.locationLabel.text = city
+    private func setupScreen() {
+        guard  let forecastData = savedForcasts else {
+            fatalError("MainViewController: savedForecast = nil")
+        }
+        
+        if forecastData.isEmpty {
+            if LocationManager.shared.isEnabled() {
+                viewModel.getForecastUsingGeolocation { [weak self] in
+                    self?.downloadData()
+                    guard let forecast = self?.savedForcasts else {
+                        return
+                    }
+                    guard let locationViewController = self?.coordinator.createLocationViewController(with: forecast[0]) else {
+                        return
+                    }
+                    self?.locationViewControllers.append(locationViewController)
+                    self?.setupPageViewController()
+                    self?.setupPageControl()
+                    self?.setupButtonsViews()
                 }
-                self.viewModel.getForecast { forecast in
-                    self.forecast = forecast
-                }
+            } else {
+                let addNewLocationViewController = coordinator.createAddNewLocationViewController()
+                locationViewControllers = [addNewLocationViewController]
+                setupPageViewController()
+                setupPageControl()
+                setupButtonsViews()
             }
-            present(onboardingViewController, animated: true, completion: nil)
-        }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        if !FirstStartIndicator.shared.isFirstStart() {
-            viewModel.getLocation { city in
-                self.locationLabel.text = city
+        } else {
+            for value in forecastData {
+                let locationViewController = coordinator.createLocationViewController(with: value)
+                locationViewControllers.append(locationViewController)
             }
-            viewModel.getForecast(completion: { forecast in
-                self.forecast = forecast
-            })
-        }
-    }
-    
-    private func setupViews() {
-        view.addSubview(settingsButton)
-        view.addSubview(locationLabel)
-        view.addSubview(locationChoiceButton)
-        view.addSubview(currentForecastView)
-        
-        currentForecastView.addSubview(sunEllipseImageView)
-        currentForecastView.addSubview(minMaxTemperatureLabel)
-        currentForecastView.addSubview(currentTemperatureLabel)
-        currentForecastView.addSubview(currentWeatherDescriptionLabel)
-        currentForecastView.addSubview(sunriseImageView)
-        currentForecastView.addSubview(sunriseTimeLabel)
-        currentForecastView.addSubview(sunsetImageView)
-        currentForecastView.addSubview(sunsetTimeLabel)
-        currentForecastView.addSubview(contentView)
-        
-        contentView.addSubview(rainfallImageView)
-        contentView.addSubview(rainfallLabel)
-        contentView.addSubview(windImageView)
-        contentView.addSubview(windSpeedLabel)
-        contentView.addSubview(humidityImageView)
-        contentView.addSubview(humidityLabel)
-        
-        settingsButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(43)
-            make.left.equalToSuperview().offset(16)
-            make.height.equalTo(18)
-            make.width.equalTo(34)
-        }
-        
-        locationLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(41)
-            make.centerX.equalToSuperview()
-        }
-        
-        locationChoiceButton.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(37)
-            make.right.equalToSuperview().offset(-15)
-            make.width.equalTo(20)
-            make.height.equalTo(26)
-        }
-        
-        currentForecastView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(112)
-            make.left.equalToSuperview().offset(16)
-            make.right.equalToSuperview().offset(-15)
-        }
-        
-        sunEllipseImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(17)
-            make.left.equalToSuperview().offset(33)
-            make.right.equalToSuperview().offset(-31)
-        }
-        
-        sunriseImageView.snp.makeConstraints { make in
-            make.width.equalTo(sunriseImageView.snp.height)
-            make.top.equalToSuperview().offset(145)
-            make.left.equalToSuperview().offset(25)
-            make.bottom.equalToSuperview().offset(-50)
-        }
-        
-        sunsetImageView.snp.makeConstraints { make in
-            make.width.equalTo(sunriseImageView.snp.height)
-            make.top.equalToSuperview().offset(145)
-            make.right.equalToSuperview().offset(-25)
-            make.bottom.equalToSuperview().offset(-50)
-        }
-        
-        sunriseTimeLabel.snp.makeConstraints { make in
-            make.centerX.equalTo(sunriseImageView.snp.centerX)
-            make.bottom.equalToSuperview().offset(-26)
-        }
-        
-        sunsetTimeLabel.snp.makeConstraints { make in
-            make.centerX.equalTo(sunsetImageView.snp.centerX)
-            make.bottom.equalToSuperview().offset(-26)
-        }
-        
-        minMaxTemperatureLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(33)
-            make.centerX.equalToSuperview()
-        }
-        
-        currentTemperatureLabel.snp.makeConstraints { make in
-            make.top.equalTo(minMaxTemperatureLabel.snp.bottom).offset(5)
-            make.centerX.equalToSuperview()
-        }
-        
-        currentWeatherDescriptionLabel.snp.makeConstraints { make in
-            make.top.equalTo(currentTemperatureLabel.snp.bottom).offset(5)
-            make.centerX.equalToSuperview()
-        }
-        
-        contentView.snp.makeConstraints { make in
-            make.top.equalTo(currentWeatherDescriptionLabel.snp.bottom).offset(8)
-            make.centerX.equalToSuperview()
-        }
-        
-        rainfallImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(7)
-            make.left.equalToSuperview()
-            make.bottom.equalToSuperview().offset(-5)
-        }
-        
-        rainfallLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(rainfallImageView)
-            make.left.equalTo(rainfallImageView.snp.right).offset(5)
-        }
-        
-        windImageView.snp.makeConstraints { make in
-            make.centerY.equalTo(rainfallImageView)
-            make.left.equalTo(rainfallLabel.snp.right).offset(20)
-        }
-        
-        windSpeedLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(windImageView)
-            make.left.equalTo(windImageView.snp.right).offset(5)
-        }
-        
-        humidityImageView.snp.makeConstraints { make in
-            make.centerY.equalTo(windSpeedLabel)
-            make.left.equalTo(windSpeedLabel.snp.right).offset(20)
-        }
-        
-        humidityLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(humidityImageView)
-            make.left.equalTo(humidityImageView.snp.right).offset(5)
-            make.right.equalToSuperview()
+            setupPageViewController()
+            setupPageControl()
+            setupButtonsViews()
         }
     }
     
@@ -337,49 +105,121 @@ class MainViewController: UIViewController {
     }
     
     @objc private func locationButtonTapped() {
-        coordinator.showLocationChoice()
-    }
-    
-    private func fillLabels() {
-        guard forecast != nil else {
-            return
-        }
-        let dailyForecast = forecast!.daily as! Set<DailyData>
-        let currentWeather = forecast!.current.weather as! Set<WeatherData>
-        for day in dailyForecast {
-            let currentDay = Calendar.current.component(.day, from: Date(timeIntervalSince1970: day.dt))
-            let today = Calendar.current.component(.day, from: Date())
-            let timeFormatter = DateFormatter()
-            timeFormatter.dateFormat = "HH:mm"
-            let sunrise = timeFormatter.string(from: Date(timeIntervalSince1970: day.sunrise))
-            let sunset = timeFormatter.string(from: Date(timeIntervalSince1970: day.sunset))
-            if currentDay == today {
-                minMaxTemperatureLabel.text = "\(Int(day.temp.min))\u{00B0}/\(Int(day.temp.max))\u{00B0}"
-                sunriseTimeLabel.text = sunrise
-                sunsetTimeLabel.text = sunset
-                break
+        coordinator.showLocationChoice { [weak self] in
+            self?.viewModel.downloadForecastFromDataBase { [weak self] forecastData in
+                self?.savedForcasts = forecastData
+                self?.updatePageViewController()
             }
         }
-        for weather in currentWeather {
-            currentWeatherDescriptionLabel.text = "\(weather.weatherDescription)"
-            currentWeatherDescriptionLabel.text?.capitalizeFirstLetter()
-        }
-        currentTemperatureLabel.text = "\(Int(forecast!.current.temp))\u{00B0}"
-        if forecast!.current.rain?.oneHour != nil {
-            self.rainfallLabel.text = forecast!.current.rain!.oneHour + " мм"
-        }
-        windSpeedLabel.text = "\(forecast!.current.windSpeed) м\\c"
-        
     }
     
+    private func downloadData() {
+        viewModel.downloadForecastFromDataBase { [weak self] forecastData in
+            self?.savedForcasts = forecastData
+        }
+    }
+    
+    private func setupButtonsViews() {
+        view.addSubview(settingsButton)
+        
+        view.addSubview(locationChoiceButton)
+        
+        settingsButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(43)
+            make.left.equalToSuperview().offset(16)
+            make.height.equalTo(18)
+            make.width.equalTo(34)
+        }
+        
+        locationChoiceButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(37)
+            make.right.equalToSuperview().offset(-15)
+            make.width.equalTo(20)
+            make.height.equalTo(26)
+        }
+    }
+    
+    private func setupPageViewController() {
+        guard let first = locationViewControllers.first else {
+            return
+        }
+        pageViewController.delegate = self
+        pageViewController.dataSource = self
+        pageViewController.setViewControllers([first],
+                                              direction: .forward,
+                                              animated: true,
+                                              completion: nil)
+        view.addSubview(pageViewController.view)
+        
+        
+        pageViewController.view.snp.makeConstraints { make in
+            make.top.left.right.bottom.equalToSuperview()
+        }
+    }
+    
+    private func setupPageControl() {
+        pageControl.numberOfPages = locationViewControllers.count
+        pageControl.pageIndicatorTintColor = .systemGray4
+        pageControl.currentPageIndicatorTintColor = .black
+        view.addSubview(pageControl)
+        
+        pageControl.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(82)
+            make.centerX.equalToSuperview()
+        }
+    }
+    
+    private func updatePageViewController() {
+        locationViewControllers = []
+        guard let forecastData = savedForcasts else {
+            return
+        }
+        for value in forecastData {
+            let locationViewController = coordinator.createLocationViewController(with: value)
+            locationViewControllers.append(locationViewController)
+        }
+        guard let last = locationViewControllers.last else {
+            return
+        }
+        pageViewController.setViewControllers([last],
+                                              direction: .forward,
+                                              animated: true,
+                                              completion: nil)
+        pageControl.numberOfPages = locationViewControllers.count
+        pageControl.currentPage = pageControl.numberOfPages - 1
+    }
 }
 
-extension String {
-    func capitalizingFirstLetter() -> String {
-      return prefix(1).uppercased() + self.lowercased().dropFirst()
+extension MainViewController: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+    
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard let index = locationViewControllers.firstIndex(of: viewController),
+              index > 0 else {
+            return nil
+        }
+        let before = index - 1
+        return locationViewControllers[before]
     }
-
-    mutating func capitalizeFirstLetter() {
-      self = self.capitalizingFirstLetter()
+    
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let index = locationViewControllers.firstIndex(of: viewController),
+              index < (locationViewControllers.count - 1) else {
+            return nil
+        }
+        let after = index + 1
+        return locationViewControllers[after]
+    }
+    
+    func pageViewController(_ pageViewController: UIPageViewController, willTransitionTo pendingViewControllers: [UIViewController]) {
+        pendingIndex = locationViewControllers.firstIndex(of: pendingViewControllers.first!)
+    }
+    
+    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+        if completed {
+            currentIndex = pendingIndex
+            if let index = currentIndex {
+                pageControl.currentPage = index
+            }
+        }
     }
 }

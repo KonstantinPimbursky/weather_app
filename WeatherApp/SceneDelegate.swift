@@ -20,8 +20,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let navigationController = UINavigationController()
             let mainViewModel = MainViewModel(coreDataStack: coreDataStack,
                                               networkService: networkService)
+            let locationViewModel = LocationViewModel(coreDataStack: coreDataStack,
+                                                      networkService: networkService)
             let mainCoordinator = MainCoordinator(navigationController: navigationController,
-                                                  mainViewModel: mainViewModel)
+                                                  networkService: networkService,
+                                                  mainViewModel: mainViewModel,
+                                                  locationViewModel: locationViewModel)
             mainCoordinator.start()
             
             window.rootViewController = navigationController
