@@ -101,7 +101,7 @@ class MainViewController: UIViewController {
     }
     
     @objc private func settingButtonTapped() {
-        coordinator.showSettingsScreen()
+        coordinator.showSettingsScreen(updateCompletion: updatePageViewController)
     }
     
     @objc private func locationButtonTapped() {

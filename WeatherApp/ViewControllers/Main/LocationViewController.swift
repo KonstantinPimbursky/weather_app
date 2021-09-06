@@ -75,12 +75,14 @@ class LocationViewController: UIViewController {
     private let sunriseImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "sunrise")
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
     private let sunsetImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "sunset")
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -128,18 +130,21 @@ class LocationViewController: UIViewController {
     private let rainfallImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "02d")
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
     private let windImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "wind")
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
     private let humidityImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "humidity")
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -206,7 +211,7 @@ class LocationViewController: UIViewController {
     
     private let dailyForecastLabel: UILabel = {
         let label = UILabel()
-        label.text = "Еждневный прогноз"
+        label.text = "Ежедневный прогноз"
         label.textColor = UIColor(red: 0.15, green: 0.15, blue: 0.13, alpha: 1.0)
         label.font = UIFont(name: "Rubik-Regular", size: 18)
         return label
@@ -384,21 +389,25 @@ class LocationViewController: UIViewController {
         minMaxTemperatureLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(33)
             make.centerX.equalToSuperview()
+            make.height.equalTo(20)
         }
         
         currentTemperatureLabel.snp.makeConstraints { make in
             make.top.equalTo(minMaxTemperatureLabel.snp.bottom).offset(5)
             make.centerX.equalToSuperview()
+            make.height.equalTo(40)
         }
         
         currentWeatherDescriptionLabel.snp.makeConstraints { make in
             make.top.equalTo(currentTemperatureLabel.snp.bottom).offset(5)
             make.centerX.equalToSuperview()
+            make.height.equalTo(20)
         }
         
         rainfallWindSpeedHumidityContentView.snp.makeConstraints { make in
             make.top.equalTo(currentWeatherDescriptionLabel.snp.bottom).offset(8)
             make.centerX.equalToSuperview()
+            make.height.equalTo(30)
         }
         
         rainfallImageView.snp.makeConstraints { make in
@@ -437,6 +446,7 @@ class LocationViewController: UIViewController {
             make.top.equalTo(rainfallWindSpeedHumidityContentView.snp.bottom).offset(10)
             make.bottom.equalToSuperview().offset(-21)
             make.centerX.equalToSuperview()
+            make.height.equalTo(20)
         }
         
         moreForDayButton.snp.makeConstraints { make in
@@ -506,7 +516,7 @@ extension LocationViewController: UICollectionViewDelegate, UICollectionViewData
             let cell = collectionView.cellForItem(at: indexPath) as! HourlyForecastCollectionViewCell
             cell.showSelected()
         } else {
-            
+            self.coordinator.showMoreForDaysViewController(location: locationLabel.text!, dailyData: dailyForecast!)
         }
     }
 }

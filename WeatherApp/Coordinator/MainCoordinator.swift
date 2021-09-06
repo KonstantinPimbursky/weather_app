@@ -13,10 +13,12 @@ protocol Coordinator {
     
     func start() -> Void
     func showMainViewController() -> Void
-    func showSettingsScreen() -> Void
+    func showSettingsScreen(updateCompletion: @escaping () -> Void) -> Void
     func showLocationChoice(completion: @escaping () -> Void)
+    func showMoreForDaysViewController(location: String, dailyData: [DailyData]) -> Void
     func createLocationViewController(with forecast: ForecastData) -> LocationViewController
     func createAddNewLocationViewController() -> AddNewLocationViewController
+    func goBack() -> Void
 }
 
 class MainCoordinator: Coordinator {
@@ -54,8 +56,8 @@ class MainCoordinator: Coordinator {
         navigationController.pushViewController(mainViewController, animated: false)
     }
     
-    func showSettingsScreen() {
-        let settingsViewController = SettingsViewController()
+    func showSettingsScreen(updateCompletion: @escaping () -> Void) {
+        let settingsViewController = SettingsViewController(saveComletion: updateCompletion)
         settingsViewController.modalPresentationStyle = .fullScreen
         settingsViewController.modalTransitionStyle = .crossDissolve
         navigationController.present(settingsViewController, animated: true)
@@ -86,6 +88,11 @@ class MainCoordinator: Coordinator {
         navigationController.present(alertController, animated: true, completion: nil)
     }
     
+    func showMoreForDaysViewController(location: String, dailyData: [DailyData]) {
+        let moreForeDaysViewController = MoreForDaysViewController(location: location, dailyData: dailyData, coordinator: self)
+        navigationController.pushViewController(moreForeDaysViewController, animated: true)
+    }
+    
     func createLocationViewController(with forecast: ForecastData) -> LocationViewController {
         let locationViewController = LocationViewController(coordinator: self,
                                                             viewModel: locationViewModel,
@@ -96,6 +103,10 @@ class MainCoordinator: Coordinator {
     func createAddNewLocationViewController() -> AddNewLocationViewController {
         let addNewLocationViewController = AddNewLocationViewController(coordinator: self)
         return addNewLocationViewController
+    }
+    
+    func goBack() {
+        navigationController.popViewController(animated: true)
     }
     
 }

@@ -11,6 +11,8 @@ import SnapKit
 class SettingsViewController: UIViewController {
     
     // MARK: - PROPERTIES
+    private let saveCompletion: () -> Void
+    
     private let firstCloudImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "cloud_1")?.alpha(0.3)
@@ -155,6 +157,15 @@ class SettingsViewController: UIViewController {
         return control
     }()
     
+    init(saveComletion: @escaping () -> Void) {
+        self.saveCompletion = saveComletion
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - FUNCTIONS
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -183,6 +194,7 @@ class SettingsViewController: UIViewController {
         } else {
             UserDefaults.standard.setValue(false, forKey: "notifications")
         }
+        saveCompletion()
         dismiss(animated: true, completion: nil)
     }
     

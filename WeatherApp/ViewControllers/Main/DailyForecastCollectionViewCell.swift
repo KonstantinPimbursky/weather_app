@@ -24,7 +24,11 @@ class DailyForecastCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let weatherIconImageView = UIImageView()
+    private let weatherIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
     
     private let humidityLabel: UILabel = {
         let label = UILabel()
@@ -52,6 +56,7 @@ class DailyForecastCollectionViewCell: UICollectionViewCell {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "chevron.right")
         imageView.tintColor = UIColor.black
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     

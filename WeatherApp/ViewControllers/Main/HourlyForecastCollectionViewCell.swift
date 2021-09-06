@@ -55,7 +55,11 @@ class HourlyForecastCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private let forecastIconImageView = UIImageView()
+    private let forecastIconImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
     
     private let temperatureLabel: UILabel = {
         let label = UILabel()
