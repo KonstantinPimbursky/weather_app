@@ -258,22 +258,20 @@ class LocationViewController: UIViewController {
     }
     
     @objc private func tick() {
-        let timeformatter = DateFormatter()
-        if UserDefaults.standard.string(forKey: "dateFormat") == "12" {
-            timeformatter.dateFormat = "hh:mm"
-        } else {
-            timeformatter.dateFormat = "HH:mm"
-        }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEEEEE dd MMMM"
         dateFormatter.locale = Locale(identifier: "ru_RU")
         let currentDate = dateFormatter.string(from: Date())
-        let currentTime = timeformatter.string(from: Date())
+        let currentTime = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: Date().timeIntervalSince1970)
         currentTimeLabel.text = "\(currentTime), \(currentDate)"
     }
     
     @objc private func moreForDayButtonTapped() {
-        
+        guard let hourlyData = hourlyForecast else {
+            return
+        }
+        let forTwentyFourHours = Array(hourlyData[0...23])
+        coordinator.showMoreForHoursViewController(location: locationLabel.text!, hourlyData: forTwentyFourHours)
     }
     
     private func updateForecastData() {
@@ -456,22 +454,14 @@ class LocationViewController: UIViewController {
     }
     
     private func fillLabels() {
-        let timeFormatter = DateFormatter()
-        if UserDefaults.standard.string(forKey: "dateFormat") == "24" {
-            timeFormatter.dateFormat = "HH:mm"
-        } else {
-            timeFormatter.dateFormat = "hh:mm"
-        }
-        let sunrise = timeFormatter.string(from: Date(timeIntervalSince1970: dailyForecast![0].sunrise))
-        let sunset = timeFormatter.string(from: Date(timeIntervalSince1970: dailyForecast![0].sunset))
         locationLabel.text = forecast.location
-        minMaxTemperatureLabel.text = "\(Int(dailyForecast![0].temp.min))\u{00B0}/\(Int(dailyForecast![0].temp.max))\u{00B0}"
-        sunriseTimeLabel.text = sunrise
-        sunsetTimeLabel.text = sunset
+        minMaxTemperatureLabel.text = ConvertService.shared.temperatureUsingSavedSetting(temperature: dailyForecast![0].temp.min) + "/" + ConvertService.shared.temperatureUsingSavedSetting(temperature: dailyForecast![0].temp.max)
+        sunriseTimeLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: dailyForecast![0].sunrise)
+        sunsetTimeLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: dailyForecast![0].sunset)
         humidityLabel.text = "\(dailyForecast![0].humidity)%"
         currentWeatherDescriptionLabel.text = currentForecast!.weather.weatherDescription
         currentWeatherDescriptionLabel.text?.capitalizeFirstLetter()
-        currentTemperatureLabel.text = "\(Int(currentForecast!.temp))\u{00B0}"
+        currentTemperatureLabel.text = ConvertService.shared.temperatureUsingSavedSetting(temperature: currentForecast!.temp)
         if dailyForecast![0].rain != 0 {
             rainfallLabel.text = "\(dailyForecast![0].rain) мм"
         } else {
@@ -481,12 +471,7 @@ class LocationViewController: UIViewController {
                 rainfallLabel.text = "0 мм"
             }
         }
-        if UserDefaults.standard.string(forKey: "windSpeed") == "Km" {
-            windSpeedLabel.text = "\(currentForecast!.windSpeed) м\\c"
-        } else {
-            let windSpeed = Double(currentForecast!.windSpeed) * 2.237
-            windSpeedLabel.text = "\(windSpeed) миля\\ч"
-        }
+        windSpeedLabel.text = ConvertService.shared.windSpeedUsingSavedSettings(windSpeed: currentForecast!.windSpeed)
     }
 }
 

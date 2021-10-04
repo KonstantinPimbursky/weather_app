@@ -31,7 +31,6 @@ class MoreForDaysViewController: UIViewController {
     
     private let locationLabel: UILabel = {
         let label = UILabel()
-        label.text = "Дневная погода"
         label.textColor = UIColor(red: 0.15, green: 0.15, blue: 0.13, alpha: 1.0)
         label.font = UIFont(name: "Rubik-Medium", size: 18)
         return label

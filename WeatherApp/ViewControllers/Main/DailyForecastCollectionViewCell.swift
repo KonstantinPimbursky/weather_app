@@ -83,7 +83,9 @@ class DailyForecastCollectionViewCell: UICollectionViewCell {
         weatherIconImageView.image = UIImage(named: dailyData.weather.icon)
         humidityLabel.text = "\(dailyData.humidity)%"
         weatherDescriptionLabel.text = dailyData.weather.weatherDescription.capitalizingFirstLetter()
-        minMaxTemperatureLabel.text = "\(Int(dailyData.temp.min))\u{00B0}/\(Int(dailyData.temp.max))\u{00B0}"
+        let minTemperature = ConvertService.shared.temperatureUsingSavedSetting(temperature: dailyData.temp.min)
+        let maxTemperature = ConvertService.shared.temperatureUsingSavedSetting(temperature: dailyData.temp.max)
+        minMaxTemperatureLabel.text = minTemperature + "/" + maxTemperature
     }
     
     private func setupViews() {

@@ -257,19 +257,13 @@ class SunAndMoonView: UIView {
         guard let forecast = forecastForOneDay else {
             return
         }
-        let formatter = DateFormatter()
-        if UserDefaults.standard.string(forKey: "dateFormat") == "24" {
-            formatter.dateFormat = "HH:mm"
-        } else {
-            formatter.dateFormat = "hh:mm"
-        }
         moonPhaseLabel.text = moonPhaseInText(moonPhaseInDouble: forecast.moonPhase)
         sunDurationLabel.text = convertFromSecondsToHoursAndMinutes(seconds: Int(forecast.sunset - forecast.sunrise))
         moonDurationLabel.text = calculateMoonDuration(moonrise: forecast.moonrise, moonset: forecast.moonset)
-        sunriseLabel.text = formatter.string(from: Date(timeIntervalSince1970: forecast.sunrise))
-        sunsetLabel.text = formatter.string(from: Date(timeIntervalSince1970: forecast.sunset))
-        moonriseLabel.text = formatter.string(from: Date(timeIntervalSince1970: forecast.moonrise))
-        moonsetLabel.text = formatter.string(from: Date(timeIntervalSince1970: forecast.moonset))
+        sunriseLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: forecast.sunrise)
+        sunsetLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: forecast.sunset)
+        moonriseLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: forecast.moonrise)
+        moonsetLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: forecast.moonset)
     }
     
     private func moonPhaseInText(moonPhaseInDouble: Double) -> String {

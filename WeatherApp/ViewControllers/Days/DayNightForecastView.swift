@@ -211,17 +211,22 @@ class DayNightForecastView: UIView {
         switch dayOrNight {
         case .day:
             titleLabel.text = "День"
-            temperatureLabel.text = "\(Int(forecastData.temp.day))\u{00B0}"
-            feelsLikeTemperatureLabel.text = "\(Int(forecastData.feelsLike.day))\u{00B0}"
+            temperatureLabel.text =
+                ConvertService.shared.temperatureUsingSavedSetting(temperature: forecastData.temp.day)
+            feelsLikeTemperatureLabel.text =
+                ConvertService.shared.temperatureUsingSavedSetting(temperature: forecastData.feelsLike.day)
         case .night:
             titleLabel.text = "Ночь"
-            temperatureLabel.text = "\(Int(forecastData.temp.night))\u{00B0}"
-            feelsLikeTemperatureLabel.text = "\(Int(forecastData.feelsLike.night))\u{00B0}"
+            temperatureLabel.text =
+                ConvertService.shared.temperatureUsingSavedSetting(temperature: forecastData.temp.night)
+            feelsLikeTemperatureLabel.text =
+                ConvertService.shared.temperatureUsingSavedSetting(temperature: forecastData.feelsLike.night)
         }
         weatherIcon.image = UIImage(named: forecastData.weather.icon)
         weatherDescriptionLabel.text = forecastData.weather.weatherDescription.capitalizingFirstLetter()
-        let windDirection: String = windDirection(windDegree: Double(forecastData.windDeg))
-        windSpeedDirectionLabel.text = "\(Int(forecastData.windSpeed))м\\c \(windDirection)"
+        let windDirection = ConvertService.shared.windDirection(from: Double(forecastData.windDeg))
+        let windSpeed = ConvertService.shared.windSpeedUsingSavedSettings(windSpeed: Int16(forecastData.windSpeed))
+        windSpeedDirectionLabel.text = windSpeed + " " + windDirection
         uviLabel.text = uviRiskType(uviIndex: Int(forecastData.uvi))
         rainLabel.text = "\(forecastData.humidity)%"
         cloudsLabel.text = "\(forecastData.clouds)%"
@@ -383,47 +388,6 @@ class DayNightForecastView: UIView {
             make.height.equalTo(0.5)
         }
         
-    }
-    
-    private func windDirection(windDegree: Double) -> String {
-        switch windDegree {
-        case 0..<11.25:
-            return "С"
-        case 11.25..<33.75:
-            return "ССВ"
-        case 33.75..<56.25:
-            return "СВ"
-        case 56.25..<78.75:
-            return "ВСВ"
-        case 78.75..<101.25:
-            return "В"
-        case 101.25..<123.75:
-            return "ВЮВ"
-        case 123.75..<146.25:
-            return "ЮВ"
-        case 146.25..<168.75:
-            return "ЮЮВ"
-        case 168.75..<191.25:
-            return "Ю"
-        case 191.25..<213.75:
-            return "ЮЮЗ"
-        case 213.75..<236.25:
-            return "ЮЗ"
-        case 236.25..<258.75:
-            return "ЗЮЗ"
-        case 258.75..<281.25:
-            return "З"
-        case 281.25..<303.75:
-            return "ЗСЗ"
-        case 303.75..<326.25:
-            return "СЗ"
-        case 326.25..<348.75:
-            return "ССЗ"
-        case 348.75...380:
-            return "ССЗ"
-        default:
-            return "н/о"
-        }
     }
     
     private func uviRiskType(uviIndex: Int) -> String {

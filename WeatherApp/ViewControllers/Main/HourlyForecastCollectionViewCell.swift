@@ -12,18 +12,10 @@ class HourlyForecastCollectionViewCell: UICollectionViewCell {
     // MARK: -PROPERTIES
     var hourlyForacast: HourlyData? {
         didSet {
-            let timeformatter = DateFormatter()
-            if timeSettings == "12" {
-                timeformatter.dateFormat = "HH:mm"
-            } else {
-                timeformatter.dateFormat = "hh:mm"
-            }
-            
             if let hourly = hourlyForacast {
-                let date = Date(timeIntervalSince1970: hourly.dt)
-                timeLabel.text = timeformatter.string(from: date)
+                timeLabel.text = ConvertService.shared.timeUsingSavedSettings(dateInSeconds: hourly.dt)
                 forecastIconImageView.image = UIImage(named: hourly.weather.icon)
-                temperatureLabel.text = "\(Int(hourly.temp))\u{00B0}"
+                temperatureLabel.text = ConvertService.shared.temperatureUsingSavedSetting(temperature: hourly.temp)
             }
         }
     }
